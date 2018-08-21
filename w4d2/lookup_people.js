@@ -10,15 +10,28 @@ const client = new pg.Client({
   ssl      : settings.ssl
 });
 
+const text = 'SELECT * FROM famous_people WHERE first_name = $1'
+const lookUp = [process.argv[2]]
+
+//const birthday = ${result.birthdate}
+
+let num = 1;
+
 client.connect((err) => {
   if (err) {
     return console.error("Connection Error", err);
   }
-  client.query(process.argv[2], (err, result) => {
+  console.log('Searching...');
+
+  client.query(text, lookUp, (err, result) => {
     if (err) {
       return console.error("error running query", err);
     }
-    console.log(result.rows[0].number); //output: 1
+    console.log(`Found ${result.rows.length} person(s) by the name of '${lookUp}'`);
+    for (result of result.rows) {
+        console.log(
+        `- ${num++}: ${result.first_name} ${result.last_name}, born '${result.birthdate.toISOString().split('T')[0]}'`);
+    }; 
     client.end();
   });
 });
